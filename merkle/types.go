@@ -1,7 +1,7 @@
 package merkle
 
 import (
-	"github.com/ComposableFi/go-merkle-trees/types"
+	"github.com/privomid/MerkleTree/go-merkle-trees/types"
 )
 
 // Leaves is a representation of slice of leaf

@@ -1,4 +1,4 @@
-module github.com/ComposableFi/go-merkle-trees
+module github.com/privomid/MerkleTree/go-merkle-trees
 
 go 1.19
 

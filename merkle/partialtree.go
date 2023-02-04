@@ -1,8 +1,8 @@
 package merkle
 
 import (
-	"github.com/ComposableFi/go-merkle-trees/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/privomid/MerkleTree/go-merkle-trees/types"
 )
 
 // build is a wrapper for buildTree
