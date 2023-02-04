@@ -1,4 +1,4 @@
-module github.com/privomid/MerkleTree/go-merkle-trees
+module github.com/privomid/MerkleTree
 
 go 1.19
 
