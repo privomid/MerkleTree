@@ -191,7 +191,7 @@ func (pt *PartialTree) mergeUnverifiedLayers(other PartialTree) {
 // upsertLayer replaces layer at a given index with a new layer. Used during tree merge
 func (pt *PartialTree) upsertLayer(layerIndex uint64, newLayer Leaves) {
 
-	// check layer existance
+	// check layer existence
 	_, ok := layerAtIndex(pt.layers, layerIndex)
 	if ok {
 		// layer exists then update
@@ -201,35 +201,6 @@ func (pt *PartialTree) upsertLayer(layerIndex uint64, newLayer Leaves) {
 		pt.layers = append(pt.layers, newLayer)
 	}
 
-}
-
-// layerNodesHashes returns all hashes of all layers
-func (pt *PartialTree) layerNodesHashes() [][][]byte {
-	layers := pt.getLayers()
-	layersCount := len(layers)
-	allHashes := make([][][]byte, layersCount)
-
-	// loop through all layers
-	for i := 0; i < layersCount; i++ {
-		l := layers[i]
-		leavesCount := len(l)
-		layerHashes := make([][]byte, leavesCount)
-
-		// loop through all of nodes of this layer
-		for j := 0; j < leavesCount; j++ {
-			layerHashes[j] = l[j].Hash
-		}
-
-		// update the result
-		allHashes[i] = layerHashes
-	}
-
-	return allHashes
-}
-
-// getLayers returns partial tree layers
-func (pt *PartialTree) getLayers() Layers {
-	return pt.layers
 }
 
 // reverseLayers reverses a slice of types.Leaf slice

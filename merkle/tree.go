@@ -126,13 +126,6 @@ func (t *Tree) Proof(proofIndices []uint64) Proof {
 	return NewProof(proofLeaves, siblingProofHashes, leavesLen)
 }
 
-// insert inserts a new types.Leaf. Please note it won't modify the root just yet; For the changes
-// to be applied to the root, commit method should be called first. To get the
-// root of the new tree without applying the changes, you can use
-func (t *Tree) insert(leaf []byte) {
-	t.UncommittedLeaves = append(t.UncommittedLeaves, leaf)
-}
-
 // append appends leaves to the tree.
 func (t *Tree) append(leaves [][]byte) {
 	t.UncommittedLeaves = append(t.UncommittedLeaves, leaves...)
@@ -161,50 +154,6 @@ func (t *Tree) commit() error {
 	return nil
 }
 
-// uncommittedRoot calculates the root of the uncommitted changes as if they were committed.
-// Will return the same hash as root of merkle tree after commit
-func (t *Tree) uncommittedRoot() ([]byte, error) {
-	uncommittedTree, err := t.uncommittedDiff()
-	if err != nil {
-		return []byte{}, err
-	}
-	return uncommittedTree.Root(), nil
-}
-
-// uncommittedRootHex calculates the root of the uncommitted changes as if they were committed. Serializes
-// the result as a hex string.
-func (t *Tree) uncommittedRootHex() (string, error) {
-
-	// get uncommitted root
-	root, err := t.uncommittedRoot()
-	if err != nil {
-		return "", err
-	}
-
-	// convert to hex string and return
-	return hex.EncodeToString(root), nil
-}
-
-// depth returns the tree depth. A tree depth is how many layers there is between the
-// leaves and the root
-func (t *Tree) depth() int {
-	return len(t.layers()) - 1
-}
-
-// baseLeaves returns a copy of the tree leaves - the base level of the tree.
-func (t *Tree) baseLeaves() [][]byte {
-
-	// get all hashes of leaves of all layersLeavesHashes
-	layersLeavesHashes := t.layersNodesHashes()
-
-	// if leaves are available
-	if len(layersLeavesHashes) > 0 {
-		return layersLeavesHashes[0]
-	}
-
-	return [][]byte{}
-}
-
 // leavesLen returns the number of leaves in the tree.
 func (t *Tree) leavesLen() uint64 {
 	leaves := t.leaves()
@@ -217,12 +166,6 @@ func (t *Tree) leaves() Leaves {
 		return t.layers()[0]
 	}
 	return Leaves{}
-}
-
-// layersNodesHashes returns the whole tree, where the first layer is leaves and
-// consequent layersNodesHashes are nodes.
-func (t *Tree) layersNodesHashes() [][][]byte {
-	return t.currentWorkingTree.layerNodesHashes()
 }
 
 // layers returns leaves of the current working tree
@@ -259,7 +202,7 @@ func (t *Tree) uncommittedPartialTreeLayers() (Layers, uint64) {
 	// update layers with new siblings of each layer
 	partialTreeLayers := t.currentLayersWithSiblings(reservedIndecies)
 
-	// upsert partial layer by uncommitted reseved nodes
+	// upsert partial layer by uncommitted reserved nodes
 	partialTreeLayers = upsertUncommittedReservedLayers(partialTreeLayers, reservedLeaves)
 
 	// calculate new tree depth
@@ -277,13 +220,13 @@ func (t *Tree) getUncommittedReservedIndecies() []uint64 {
 		return []uint64{}
 	}
 
-	commitedLeavesCount := t.leavesLen()
-	unCommitedLeavesCount := len(t.UncommittedLeaves)
+	committedLeavesCount := t.leavesLen()
+	unCommittedLeavesCount := len(t.UncommittedLeaves)
 
 	// populate uncommitted indices according to the last committed leaves indices
-	reservedIndecies := make([]uint64, unCommitedLeavesCount)
-	for i := 0; i < unCommitedLeavesCount; i++ {
-		reservedIndecies[i] = commitedLeavesCount + uint64(i)
+	reservedIndecies := make([]uint64, unCommittedLeavesCount)
+	for i := 0; i < unCommittedLeavesCount; i++ {
+		reservedIndecies[i] = committedLeavesCount + uint64(i)
 	}
 
 	return reservedIndecies
@@ -316,7 +259,7 @@ func leafAtIndex(leaves Leaves, index uint64) (types.Leaf, bool) {
 	return types.Leaf{}, false
 }
 
-// layerAtIndex returns layer object by intex
+// layerAtIndex returns layer object by index
 func layerAtIndex(layers Layers, index uint64) (Leaves, bool) {
 
 	if len(layers) > int(index) {
